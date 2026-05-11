@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>智慧宿舍管理系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f4f1eb;--surface:#fffdf7;--surface2:#f8f5ee;
+  --accent:#c45d35;--accent-light:#e8a882;--accent-bg:rgba(196,93,53,.08);
+  --green:#4a8c6f;--green-bg:rgba(74,140,111,.1);
+  --red:#c44b4b;--red-bg:rgba(196,75,75,.08);
+  --blue:#4a7cc4;--blue-bg:rgba(74,124,196,.08);
+  --text:#2a2118;--text2:#6b5e50;--text3:#9a8d7e;
+  --border:#d8cfbf;--border2:#e8e0d0;
+  --r:12px;--r2:8px;
+  --shadow:0 2px 12px rgba(42,33,24,.08);
+  --shadow2:0 8px 32px rgba(42,33,24,.12);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,textarea,select{font-family:inherit;outline:none}
+.hidden{display:none!important}
+
+/* ========== LOGIN ========== */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#f5f0e8 0%,#ebe4d6 100%)}
+.login-card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow2);width:100%;max-width:420px;overflow:hidden;animation:fadeUp .6s ease}
+.login-header{background:var(--accent);color:#fff;padding:32px 28px 28px;text-align:center}
+.login-header h1{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.login-header p{opacity:.85;font-size:.88rem}
+.login-body{padding:28px}
+.role-tabs{display:flex;gap:8px;margin-bottom:24px;background:var(--bg);border-radius:10px;padding:4px}
+.role-tab{flex:1;padding:10px;border-radius:8px;font-size:.9rem;font-weight:500;color:var(--text2);background:transparent;transition:.25s}
+.role-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.82rem;font-weight:500;color:var(--text2);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--r2);font-size:.92rem;color:var(--text);background:var(--surface);transition:.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:80px}
+.login-btn{width:100%;padding:13px;background:var(--accent);color:#fff;border-radius:var(--r2);font-size:1rem;font-weight:600;transition:.2s;margin-top:8px}
+.login-btn:hover{background:#b5532f}
+.login-hint{text-align:center;font-size:.8rem;color:var(--text3);margin-top:16px}
+
+/* ========== HEADER ========== */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border2);padding:0 16px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.header-title{font-size:1.1rem;font-weight:700}
+.header-role{font-size:.72rem;color:var(--text3);background:var(--bg);padding:2px 8px;border-radius:10px;margin-left:6px}
+.header-right{display:flex;align-items:center;gap:10px}
+.qr-btn{padding:7px 14px;background:var(--bg);border-radius:var(--r2);font-size:.82rem;color:var(--text2);display:flex;align-items:center;gap:5px;transition:.2s}
+.qr-btn:hover{background:var(--border2)}
+.logout-btn{padding:7px 14px;background:var(--red-bg);border-radius:var(--r2);font-size:.82rem;color:var(--red);transition:.2s}
+.logout-btn:hover{background:rgba(196,75,75,.15)}
+
+/* ========== TABS ========== */
+.tab-bar{display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border2);padding:0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-item{padding:12px 20px;font-size:.88rem;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;white-space:nowrap;transition:.2s;background:none}
+.tab-item:hover{color:var(--text2)}
+.tab-item.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ========== MAIN ========== */
+.app-main{max-width:1200px;margin:0 auto;padding:20px 16px 80px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .3s ease}
+
+/* ========== STATS ========== */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.stat-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.stat-val{font-size:1.8rem;font-weight:700;line-height:1.2}
+.stat-sub{font-size:.78rem;color:var(--text2);margin-top:2px}
+.stat-card.accent .stat-val{color:var(--accent)}
+.stat-card.green .stat-val{color:var(--green)}
+.stat-card.red .stat-val{color:var(--red)}
+.stat-card.blue .stat-val{color:var(--blue)}
+
+/* ========== SECTION ========== */
+.section-title{font-size:1.05rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.section-title span{font-size:.8rem;color:var(--text3);font-weight:400}
+
+/* ========== ROOM GRID ========== */
+.room-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px}
+.room-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:.25s;animation:fadeUp .5s ease forwards;opacity:0}
+.room-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.room-card-head{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border2)}
+.room-num{font-size:1.1rem;font-weight:700}
+.room-badge{font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:500}
+.room-badge.five{background:var(--accent-bg);color:var(--accent)}
+.room-badge.four{background:var(--green-bg);color:var(--green)}
+.room-card-body{padding:12px 16px}
+.beds-row{display:flex;gap:6px;flex-wrap:wrap}
+.bed-chip{flex:1;min-width:0;aspect-ratio:1;border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;font-size:.7rem}
+.bed-chip.occ{background:var(--accent-bg);border:1px solid rgba(196,93,53,.12)}
+.bed-chip.empty{background:var(--bg);border:1px dashed var(--border)}
+.bed-chip .bed-idx{position:absolute;top:2px;right:4px;font-size:.58rem;color:var(--text3)}
+.bed-chip .bed-name{font-size:.65rem;color:var(--text);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;padding:0 2px}
+.room-card-foot{padding:10px 16px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--text2)}
+.occ-bar{display:flex;align-items:center;gap:6px}
+.occ-track{width:50px;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.occ-fill{height:100%;border-radius:2px;transition:.4s}
+.occ-fill.full{background:var(--red)}
+.occ-fill.part{background:var(--accent)}
+.occ-fill.low{background:var(--green)}
+.empty-tag{font-weight:500}
+.empty-tag.full{color:var(--red)}
+
+/* ========== FLOOR GROUP ========== */
+.floor-group{margin-bottom:20px}
+.floor-title{font-size:.92rem;font-weight:600;margin-bottom:10px;padding-left:4px;display:flex;align-items:center;gap:8px}
+.floor-title::after{content:'';flex:1;height:1px;background:var(--border2)}
+.floor-title span{font-size:.75rem;color:var(--text3);font-weight:400}
+
+/* ========== FILTER BAR ========== */
+.filter-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.filter-tabs{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px}
+.ftab{padding:7px 16px;border-radius:8px;font-size:.84rem;font-weight:500;color:var(--text2);background:transparent;transition:.25s}
+.ftab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.search-input{padding:8px 14px;border:1px solid var(--border);border-radius:var(--r2);font-size:.88rem;background:var(--surface);width:220px;transition:.2s}
+.search-input:focus{border-color:var(--accent)}
+
+/* ========== REPAIR CARDS ========== */
+.repair-list{display:flex;flex-direction:column;gap:12px}
+.repair-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:fadeUp .4s ease forwards;opacity:0}
+.repair-head{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border2)}
+.repair-info{display:flex;align-items:center;gap:10px}
+.repair-room{font-weight:600;font-size:.95rem}
+.repair-status{font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600}
+.repair-status.pending{background:var(--accent-bg);color:var(--accent)}
+.repair-status.repaired{background:var(--blue-bg);color:var(--blue)}
+.repair-status.done{background:var(--green-bg);color:var(--green)}
+.repair-body{padding:12px 16px}
+.repair-item-name{font-weight:600;margin-bottom:4px}
+.repair-desc{font-size:.85rem;color:var(--text2);margin-bottom:10px}
+.repair-photos{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.photo-group{flex:1;min-width:120px}
+.photo-label{font-size:.72rem;color:var(--text3);margin-bottom:4px;font-weight:500}
+.photo-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r2);border:1px solid var(--border2);cursor:pointer;transition:.2s}
+.photo-thumb:hover{opacity:.85}
+.photo-placeholder{width:100%;aspect-ratio:4/3;border-radius:var(--r2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--text3);background:var(--bg)}
+.repair-foot{padding:10px 16px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--text3)}
+
+/* ========== BUTTONS ========== */
+.btn{padding:9px 18px;border-radius:var(--r2);font-size:.85rem;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:.2s;border:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#b5532f}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#3d7a60}
+.btn-secondary{background:var(--bg);color:var(--text2)}
+.btn-secondary:hover{background:var(--border2)}
+.btn-danger{background:var(--red-bg);color:var(--red)}
+.btn-danger:hover{background:rgba(196,75,75,.15)}
+.btn-sm{padding:6px 12px;font-size:.78rem}
+.btn:disabled{opacity:.5;pointer-events:none}
+
+/* ========== MODAL ========== */
+.modal-overlay{position:fixed;inset:0;background:rgba(42,33,24,.5);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:.3s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:16px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow2);transform:translateY(16px);transition:.3s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-head{padding:20px 24px 14px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border2)}
+.modal-head h2{font-size:1.2rem;font-weight:700}
+.modal-close{width:32px;height:32px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text2);transition:.2s}
+.modal-close:hover{background:var(--border)}
+.modal-body{padding:20px 24px}
+.modal-foot{padding:14px 24px 20px;display:flex;justify-content:flex-end;gap:10px}
+
+/* ========== PHOTO UPLOAD ========== */
+.photo-upload-area{border:2px dashed var(--border);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.photo-upload-area:hover{border-color:var(--accent);background:var(--accent-bg)}
+.photo-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.photo-upload-area p{font-size:.85rem;color:var(--text2)}
+.photo-upload-area .upload-icon{font-size:2rem;margin-bottom:8px;opacity:.5}
+.photo-preview{margin-top:10px;position:relative;display:inline-block}
+.photo-preview img{max-width:100%;max-height:200px;border-radius:var(--r2);border:1px solid var(--border2)}
+.photo-preview .remove-photo{position:absolute;top:-8px;right:-8px;width:24px;height:24px;background:var(--red);color:#fff;border-radius:50%;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+
+/* ========== BED DETAIL ========== */
+.bed-detail-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.bed-detail{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r2);border:1px solid var(--border2);transition:.2s}
+.bed-detail.occ{border-left:3px solid var(--accent)}
+.bed-detail.empty-slot{border-left:3px dashed var(--border);background:var(--bg)}
+.bed-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;flex-shrink:0}
+.bed-detail.occ .bed-num{background:var(--accent-bg);color:var(--accent)}
+.bed-detail.empty-slot .bed-num{background:var(--bg);color:var(--text3)}
+.bed-info{flex:1}
+.bed-info .name{font-weight:600;font-size:.92rem}
+.bed-info .phone{font-size:.82rem;color:var(--text2)}
+.bed-info .empty-text{font-size:.85rem;color:var(--text3);font-style:italic}
+
+/* ========== TOAST ========== */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:var(--surface);padding:12px 28px;border-radius:12px;font-size:.9rem;box-shadow:var(--shadow2);z-index:999;transition:.4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ========== QR MODAL ========== */
+.qr-content{text-align:center;padding:20px}
+.qr-content canvas{border-radius:8px;margin:12px auto;display:block}
+.qr-content .qr-url{font-size:.78rem;color:var(--text3);word-break:break-all;margin-top:10px;padding:8px 12px;background:var(--bg);border-radius:var(--r2)}
+.qr-content .qr-hint{font-size:.82rem;color:var(--text2);margin-top:12px}
+
+/* ========== IMAGE VIEWER ========== */
+.viewer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.3s;cursor:pointer}
+.viewer-overlay.open{opacity:1;pointer-events:all}
+.viewer-overlay img{max-width:95%;max-height:90vh;border-radius:8px;box-shadow:0 0 40px rgba(0,0,0,.5)}
+
+/* ========== EMPTY ========== */
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty p{font-size:.92rem}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ========== RESPONSIVE ========== */
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .room-grid{grid-template-columns:1fr}
+  .search-input{width:100%}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-tabs{justify-content:center}
+  .stat-val{font-size:1.4rem}
+  .modal{max-width:100%;border-radius:16px 16px 0 0;margin-top:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>智慧宿舍管理系统</h1>
+      <p>Smart Dormitory Management</p>
+    </div>
+    <div class="login-body">
+      <div class="role-tabs">
+        <button class="role-tab active" onclick="switchRole('admin',this)">管理员登录</button>
+        <button class="role-tab" onclick="switchRole('resident',this)">住宿人员</button>
+      </div>
+      <div id="adminForm">
+        <div class="form-group">
+          <label>管理员密码</label>
+          <input type="password" id="adminPwd" placeholder="请输入管理员密码" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="login-btn" onclick="doLogin()">登录管理系统</button>
+        <div class="login-hint">默认密码：admin123</div>
+      </div>
+      <div id="residentForm" class="hidden">
+        <div class="form-group">
+          <label>选择宿舍</label>
+          <select id="resRoom"></select>
+        </div>
+        <div class="form-group">
+          <label>选择姓名</label>
+          <select id="resName"><option value="">请先选择宿舍</option></select>
+        </div>
+        <button class="login-btn" onclick="doLogin()">登录</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div class="hidden" id="appPage">
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="header-icon">🏠</div>
+        <div class="header-title">宿舍管理</div>
+        <span class="header-role" id="headerRole"></span>
+      </div>
+      <div class="header-right">
+        <button class="qr-btn" onclick="showQR()">📱 分享</button>
+        <button class="logout-btn" onclick="doLogout()">退出</button>
+      </div>
+    </div>
+  </header>
+  <div class="tab-bar" id="tabBar"></div>
+  <main class="app-main" id="appMain"></main>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+<div class="modal-overlay" id="roomModal">
+  <div class="modal">
+    <div class="modal-head"><div><h2 id="rmTitle"></h2><div style="font-size:.82rem;color:var(--text2);margin-top:2px" id="rmInfo"></div></div><button class="modal-close" onclick="closeModal('roomModal')">×</button></div>
+    <div class="modal-body" id="rmBody"></div>
+    <div class="modal-foot" id="rmFoot"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="repairModal">
+  <div class="modal">
+    <div class="modal-head"><h2>提交报修</h2><button class="modal-close" onclick="closeModal('repairModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>报修物品</label><input id="rpItem" placeholder="如：台灯、门锁、水龙头等"></div>
+      <div class="form-group"><label>问题描述</label><textarea id="rpDesc" placeholder="请详细描述损坏情况..."></textarea></div>
+      <div class="form-group"><label>拍照上传（损坏照片）</label>
+        <div class="photo-upload-area" id="rpUploadArea">
+          <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(event,'rpPreview')">
+          <div class="upload-icon">📷</div>
+          <p>点击拍照或选择照片</p>
+        </div>
+        <div class="photo-preview hidden" id="rpPreview"><img id="rpPreviewImg"><button class="remove-photo" onclick="removePhoto('rpPreview')">×</button></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeModal('repairModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitRepair()">提交报修</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="fixModal">
+  <div class="modal">
+    <div class="modal-head"><h2>上传维修照片</h2><button class="modal-close" onclick="closeModal('fixModal')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:.88rem;color:var(--text2);margin-bottom:14px">请上传维修完成后的照片，以便住宿人员确认。</p>
+      <div class="photo-upload-area" id="fixUploadArea">
+        <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(event,'fixPreview')">
+        <div class="upload-icon">🔧</div>
+        <p>点击拍照或选择照片</p>
+      </div>
+      <div class="photo-preview hidden" id="fixPreview"><img id="fixPreviewImg"><button class="remove-photo" onclick="removePhoto('fixPreview')">×</button></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeModal('fixModal')">取消</button>
+      <button class="btn btn-green" onclick="confirmRepair()">确认维修完成</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addRoomModal">
+  <div class="modal">
+    <div class="modal-head"><h2>添加宿舍</h2><button class="modal-close" onclick="closeModal('addRoomModal')">×</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label>楼栋</label><input id="arBuilding" placeholder="如：3号楼"></div>
+        <div class="form-group"><label>楼层</label><input id="arFloor" placeholder="如：2层"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label>房间号</label><input id="arNumber" placeholder="如：201"></div>
+        <div class="form-group"><label>类型</label>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="btn btn-secondary" id="arType5" onclick="selArType('five')" style="flex:1;justify-content:center">五人间</button>
+            <button class="btn btn-secondary" id="arType4" onclick="selArType('four')" style="flex:1;justify-content:center">四人间</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeModal('addRoomModal')">取消</button>
+      <button class="btn btn-primary" onclick="addRoom()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="qrModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head"><h2>扫码访问</h2><button class="modal-close" onclick="closeModal('qrModal')">×</button></div>
+    <div class="qr-content" id="qrContent"></div>
+  </div>
+</div>
+
+<div class="viewer-overlay" id="imgViewer" onclick="this.classList.remove('open')">
+  <img id="viewerImg">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== DATA ====================
+const ADMIN_PWD = 'admin123';
+let currentUser = null;
+let currentTab = 'overview';
+let arType = '';
+let fixRepairId = '';
+
+function defaultData() {
+  return {
+    rooms: [
+      {id:'r1',building:'3号楼',floor:'2层',number:'201',type:'five',residents:[
+        {name:'张伟',phone:'13800138001'},{name:'李明',phone:'13800138002'},{name:'王芳',phone:'13800138003'},
+        {name:'赵强',phone:'13800138004'},{name:'陈静',phone:'13800138005'}]},
+      {id:'r2',building:'3号楼',floor:'2层',number:'202',type:'five',residents:[
+        {name:'刘洋',phone:'13800138006'},{name:'孙磊',phone:'13800138007'},{name:'周琳',phone:'13800138008'}]},
+      {id:'r3',building:'3号楼',floor:'2层',number:'203',type:'four',residents:[
+        {name:'吴涛',phone:'13800138009'},{name:'郑雪',phone:'13800138010'},{name:'黄鹏',phone:'13800138011'},{name:'林燕',phone:'13800138012'}]},
+      {id:'r4',building:'3号楼',floor:'3层',number:'301',type:'five',residents:[
+        {name:'杨帆',phone:'13800138013'},{name:'何敏',phone:'13800138014'}]},
+      {id:'r5',building:'3号楼',floor:'3层',number:'302',type:'four',residents:[
+        {name:'马超',phone:'13800138015'},{name:'朱莉',phone:'13800138016'},{name:'胡兵',phone:'13800138017'}]},
+      {id:'r6',building:'3号楼',floor:'3层',number:'303',type:'four',residents:[]},
+      {id:'r7',building:'5号楼',floor:'1层',number:'101',type:'five',residents:[
+        {name:'郭亮',phone:'13800138018'},{name:'高洁',phone:'13800138019'},{name:'罗浩',phone:'13800138020'},{name:'梁颖',phone:'13800138021'}]},
+      {id:'r8',building:'5号楼',floor:'1层',number:'102',type:'four',residents:[
+        {name:'宋佳',phone:'13800138022'},{name:'唐磊',phone:'13800138023'}]}
+    ],
+    repairs: [
+      {id:'rp1',roomId:'r2',roomLabel:'3号楼 202',itemName:'台灯',desc:'台灯不亮，更换灯泡后仍然无法使用',photoBefore:'',status:'pending',submitBy:'刘洋',submitAt:'2026-03-18 14:30',photoAfter:'',doneAt:''},
+      {id:'rp2',roomId:'r5',roomLabel:'3号楼 302',itemName:'水龙头',desc:'卫生间水龙头漏水严重',photoBefore:'',status:'repaired',submitBy:'马超',submitAt:'2026-03-17 09:15',photoAfter:'',doneAt:''},
+      {id:'rp3',roomId:'r7',roomLabel:'5号楼 101',itemName:'门锁',desc:'门锁松动，关不上门',photoBefore:'',status:'done',submitBy:'郭亮',submitAt:'2026-03-15 16:40',photoAfter:'',doneAt:'2026-03-16 10:00'}
+    ]
+  };
+}
+
+function loadData() {
+  const s = localStorage.getItem('dormApp');
+  return s ? JSON.parse(s) : defaultData();
+}
+function saveData(d) { localStorage.setItem('dormApp', JSON.stringify(d)); }
+
+// ==================== AUTH ====================
+let loginRole = 'admin';
+function switchRole(role, el) {
+  loginRole = role;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('adminForm').classList.toggle('hidden', role !== 'admin');
+  document.getElementById('residentForm').classList.toggle('hidden', role !== 'resident');
+  if (role === 'resident') populateResidentSelects();
+}
+
+function populateResidentSelects() {
+  const d = loadData();
+  const roomSel = document.getElementById('resRoom');
+  const nameSel = document.getElementById('resName');
+  roomSel.innerHTML = '<option value="">请选择宿舍</option>';
+  d.rooms.forEach(r => {
+    if (r.residents.length > 0) {
+      roomSel.innerHTML += `<option value="${r.id}">${r.building} ${r.number} (${r.residents.length}人)</option>`;
+    }
+  });
+  roomSel.onchange = () => {
+    const room = d.rooms.find(r => r.id === roomSel.value);
+    nameSel.innerHTML = '<option value="">请选择姓名</option>';
+    if (room) room.residents.forEach(res => {
+      nameSel.innerHTML += `<option value="${res.name}">${res.name}</option>`;
+    });
+  };
+}
+
+function doLogin() {
+  if (loginRole === 'admin') {
+    const pwd = document.getElementById('adminPwd').value;
+    if (pwd !== ADMIN_PWD) { showToast('密码错误'); return; }
+    currentUser = { role: 'admin', name: '管理员' };
+  } else {
+    const roomId = document.getElementById('resRoom').value;
+    const name = document.getElementById('resName').value;
+    if (!roomId || !name) { showToast('请选择宿舍和姓名'); return; }
+    const d = loadData();
+    const room = d.rooms.find(r => r.id === roomId);
+    const resident = room.residents.find(r => r.name === name);
+    currentUser = { role: 'resident', name, roomId, roomLabel: `${room.building} ${room.number}`, phone: resident.phone, bedIndex: room.residents.indexOf(resident) };
+  }
+  sessionStorage.setItem('dormUser', JSON.stringify(currentUser));
+  showApp();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('dormUser');
+  currentUser = null;
+  document.getElementById('appPage').classList.add('hidden');
+  document.getElementById('loginPage').classList.remove('hidden');
+}
+
+// ==================== APP ====================
+function showApp() {
+  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('appPage').classList.remove('hidden');
+  document.getElementById('headerRole').textContent = currentUser.role === 'admin' ? '管理员' : '住宿人员';
+  renderTabs();
+  switchTab('overview');
+}
+
+function renderTabs() {
+  const bar = document.getElementById('tabBar');
+  if (currentUser.role === 'admin') {
+    bar.innerHTML = `
+      <button class="tab-item active" data-tab="overview" onclick="switchTab('overview')">总览</button>
+      <button class="tab-item" data-tab="rooms" onclick="switchTab('rooms')">宿舍管理</button>
+      <button class="tab-item" data-tab="repairs" onclick="switchTab('repairs')">报修管理</button>`;
+  } else {
+    bar.innerHTML = `
+      <button class="tab-item active" data-tab="overview" onclick="switchTab('overview')">我的宿舍</button>
+      <button class="tab-item" data-tab="repairs" onclick="switchTab('repairs')">报修服务</button>`;
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  const main = document.getElementById('appMain');
+  if (currentUser.role === 'admin') {
+    if (tab === 'overview') renderAdminOverview(main);
+    else if (tab === 'rooms') renderAdminRooms(main);
+    else if (tab === 'repairs') renderAdminRepairs(main);
+  } else {
+    if (tab === 'overview') renderResidentOverview(main);
+    else if (tab === 'repairs') renderResidentRepairs(main);
+  }
+}
+
+// ==================== ADMIN OVERVIEW ====================
+function renderAdminOverview(el) {
+  const d = loadData();
+  let totalBeds = 0, occ = 0, emp = 0;
+  d.rooms.forEach(r => { const b = r.type === 'five' ? 5 : 4; totalBeds += b; occ += r.residents.length; emp += b - r.residents.length; });
+  const rate = totalBeds ? Math.round(occ / totalBeds * 100) : 0;
+  const pending = d.repairs.filter(r => r.status === 'pending').length;
+  const repaired = d.repairs.filter(r => r.status === 'repaired').length;
+
+  el.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">宿舍总数</div><div class="stat-val">${d.rooms.length}</div><div class="stat-sub">间</div></div>
+      <div class="stat-card accent"><div class="stat-label">总床位</div><div class="stat-val">${totalBeds}</div><div class="stat-sub">个</div></div>
+      <div class="stat-card green"><div class="stat-label">已入住</div><div class="stat-val">${occ}</div><div class="stat-sub">入住率 ${rate}%</div></div>
+      <div class="stat-card red"><div class="stat-label">空床位</div><div class="stat-val">${emp}</div><div class="stat-sub">可分配</div></div>
+      <div class="stat-card blue"><div class="stat-label">待处理报修</div><div class="stat-val">${pending}</div><div class="stat-sub">条</div></div>
+      <div class="stat-card"><div class="stat-label">维修中</div><div class="stat-val">${repaired}</div><div class="stat-sub">条</div></div>
+    </div>
+    <div class="section-title">最近报修 <span>共 ${d.repairs.length} 条</span></div>
+    <div class="repair-list">${d.repairs.slice(-3).reverse().map(r => repairCardHTML(r, true)).join('') || '<div class="empty"><p>暂无报修记录</p></div>'}</div>`;
+}
+
+// ==================== ADMIN ROOMS ====================
+function renderAdminRooms(el) {
+  const d = loadData();
+  const search = (el._search || '').toLowerCase();
+  let rooms = d.rooms;
+  if (el._filter === 'five') rooms = rooms.filter(r => r.type === 'five');
+  else if (el._filter === 'four') rooms = rooms.filter(r => r.type === 'four');
+  else if (el._filter === 'available') rooms = rooms.filter(r => r.residents.length < (r.type === 'five' ? 5 : 4));
+  if (search) rooms = rooms.filter(r => {
+    const s = `${r.building}${r.number}${r.floor}`.toLowerCase();
+    return s.includes(search) || r.residents.some(res => res.name.toLowerCase().includes(search) || res.phone.includes(search));
+  });
+
+  const groups = {};
+  rooms.forEach(r => { const k = `${r.building} ${r.floor}`; (groups[k] = groups[k] || []).push(r); });
+
+  let html = `<div class="filter-bar">
+    <div class="filter-tabs">
+      <button class="ftab ${!el._filter||el._filter==='all'?'active':''}" onclick="filterRooms('all')">全部</button>
+      <button class="ftab ${el._filter==='five'?'active':''}" onclick="filterRooms('five')">五人间</button>
+      <button class="ftab ${el._filter==='four'?'active':''}" onclick="filterRooms('four')">四人间</button>
+      <button class="ftab ${el._filter==='available'?'active':''}" onclick="filterRooms('available')">有空位</button>
+    </div>
+    <input class="search-input" placeholder="搜索房间号、姓名、电话..." value="${el._search||''}" oninput="searchRooms(this.value)">
+  </div>`;
+
+  if (rooms.length === 0) {
+    html += '<div class="empty"><p>没有匹配的宿舍</p></div>';
+  } else {
+    Object.keys(groups).sort().forEach(k => {
+      html += `<div class="floor-group"><div class="floor-title">${k} <span>${groups[k].length} 间</span></div><div class="room-grid">`;
+      groups[k].forEach(r => { html += roomCardHTML(r); });
+      html += '</div></div>';
+    });
+  }
+  html += `<div style="text-align:center;margin-top:20px"><button class="btn btn-primary" onclick="openAddRoom()">+ 添加宿舍</button></div>`;
+  el.innerHTML = html;
+  el._filter = el._filter || 'all';
+}
+
+function filterRooms(f) {
+  const main = document.getElementById('appMain');
+  main._filter = f;
+  renderAdminRooms(main);
+}
+function searchRooms(v) {
+  const main = document.getElementById('appMain');
+  main._search = v;
+  renderAdminRooms(main);
+}
+
+function roomCardHTML(r) {
+  const beds = r.type === 'five' ? 5 : 4;
+  const occ = r.residents.length, emp = beds - occ;
+  const ratio = occ / beds;
+  let fc = 'low'; if (ratio >= 1) fc = 'full'; else if (ratio >= .5) fc = 'part';
+  let chips = '';
+  for (let i = 0; i < beds; i++) {
+    if (i < occ) chips += `<div class="bed-chip occ"><span class="bed-idx">${i+1}</span><span class="bed-name">${r.residents[i].name}</span></div>`;
+    else chips += `<div class="bed-chip empty"><span class="bed-idx">${i+1}</span><span style="font-size:.65rem;color:var(--text3)">空</span></div>`;
+  }
+  return `<div class="room-card" onclick="openRoomDetail('${r.id}')">
+    <div class="room-card-head"><span class="room-num">${r.building} ${r.number}</span><span class="room-badge ${r.type}">${r.type==='five'?'五人间':'四人间'}</span></div>
+    <div class="room-card-body"><div class="beds-row">${chips}</div></div>
+    <div class="room-card-foot"><div class="occ-bar"><span>${occ}/${beds}</span><div class="occ-track"><div class="occ-fill ${fc}" style="width:${ratio*100}%"></div></div></div><span class="empty-tag ${emp===0?'full':''}">${emp===0?'已满':'空'+emp+'床'}</span></div>
+  </div>`;
+}
+
+// ==================== ROOM DETAIL ====================
+function openRoomDetail(roomId) {
+  const d = loadData();
+  const r = d.rooms.find(x => x.id === roomId);
+  if (!r) return;
+  const beds = r.type === 'five' ? 5 : 4;
+  const occ = r.residents.length, emp = beds - occ;
+  const isAdmin = currentUser.role === 'admin';
+
+  document.getElementById('rmTitle').textContent = `${r.building} ${r.number} 宿舍详情`;
+  document.getElementById('rmInfo').textContent = `${r.floor} · ${r.type === 'five' ? '五人间' : '四人间'}`;
+
+  let list = '';
+  for (let i = 0; i < beds; i++) {
+    if (i < r.residents.length) {
+      list += `<div class="bed-detail occ"><div class="bed-num">${i+1}</div><div class="bed-info"><div class="name">${r.residents[i].name}</div><div class="phone">${r.residents[i].phone}</div></div>`;
+      if (isAdmin) list += `<div><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();removeRes('${roomId}',${i})">退宿</button></div>`;
+      list += '</div>';
+    } else {
+      list += `<div class="bed-detail empty-slot"><div class="bed-num">${i+1}</div><div class="bed-info"><div class="empty-text">空床位</div></div></div>`;
+    }
+  }
+  document.getElementById('rmBody').innerHTML = `<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <span style="font-size:.8rem;padding:4px 12px;background:var(--accent-bg);color:var(--accent);border-radius:20px">入住 ${occ} 人</span>
+    <span style="font-size:.8rem;padding:4px 12px;background:var(--green-bg);color:var(--green);border-radius:20px">空床 ${emp} 个</span>
+  </div><div class="bed-detail-list">${list}</div>`;
+
+  let foot = '';
+  if (isAdmin) {
+    foot = `<button class="btn btn-danger" onclick="deleteRoom('${roomId}')">删除宿舍</button>`;
+    if (emp > 0) foot += `<button class="btn btn-primary" onclick="showAddResForm('${roomId}')">入住登记</button>`;
+  }
+  document.getElementById('rmFoot').innerHTML = foot;
+  document.getElementById('roomModal').classList.add('open');
+}
+
+function removeRes(roomId, idx) {
+  const d = loadData();
+  const r = d.rooms.find(x => x.id === roomId);
+  if (!confirm(`确认为 ${r.residents[idx].name} 办理退宿？`)) return;
+  r.residents.splice(idx, 1);
+  saveData(d);
+  openRoomDetail(roomId);
+  showToast('退宿成功');
+}
+
+function deleteRoom(roomId) {
+  const d = loadData();
+  const r = d.rooms.find(x => x.id === roomId);
+  if (!confirm(`确认删除 ${r.building} ${r.number}？`)) return;
+  d.rooms = d.rooms.filter(x => x.id !== roomId);
+  saveData(d);
+  closeModal('roomModal');
+  switchTab('rooms');
+  showToast('宿舍已删除');
+}
+
+function showAddResForm(roomId) {
+  const d = loadData();
+  const r = d.rooms.find(x => x.id === roomId);
+  const beds = r.type === 'five' ? 5 : 4;
+  let bedOpts = '';
+  for (let i = 0; i < beds; i++) {
+    if (i >= r.residents.length) bedOpts += `<option value="${i}">${i+1}号床（空）</option>`;
+  }
+  document.getElementById('rmBody').innerHTML += `
+    <div id="addResForm" style="border-top:1px solid var(--border2);padding-top:16px;margin-top:12px">
+      <h3 style="font-size:.95rem;margin-bottom:12px">入住登记</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group"><label>姓名</label><input id="newResName" placeholder="请输入姓名"></div>
+        <div class="form-group"><label>电话</label><input id="newResPhone" placeholder="请输入电话"></div>
+      </div>
+      <div class="form-group"><label>床位</label><select id="newResBed">${bedOpts}</select></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-secondary" onclick="document.getElementById('addResForm').remove()">取消</button>
+        <button class="btn btn-primary" onclick="addResident('${roomId}')">确认入住</button>
+      </div>
+    </div>`;
+}
+
+function addResident(roomId) {
+  const name = document.getElementById('newResName').value.trim();
+  const phone = document.getElementById('newResPhone').value.trim();
+  const bed = parseInt(document.getElementById('newResBed').value);
+  if (!name || !phone) { showToast('请填写完整信息'); return; }
+  const d = loadData();
+  const r = d.rooms.find(x => x.id === roomId);
+  while (r.residents.length < bed) r.residents.push({ name: '', phone: '' });
+  if (r.residents.length === bed) r.residents.push({ name, phone });
+  else r.residents[bed] = { name, phone };
+  saveData(d);
+  openRoomDetail(roomId);
+  showToast(`${name} 已入住`);
+}
+
+// ==================== ADD ROOM ====================
+function openAddRoom() {
+  document.getElementById('arBuilding').value = '';
+  document.getElementById('arFloor').value = '';
+  document.getElementById('arNumber').value = '';
+  arType = '';
+  document.getElementById('arType5').className = 'btn btn-secondary';
+  document.getElementById('arType4').className = 'btn btn-secondary';
+  document.getElementById('addRoomModal').classList.add('open');
+}
+function selArType(t) {
+  arType = t;
+  document.getElementById('arType5').className = 'btn ' + (t === 'five' ? 'btn-primary' : 'btn-secondary');
+  document.getElementById('arType4').className = 'btn ' + (t === 'four' ? 'btn-primary' : 'btn-secondary');
+}
+function addRoom() {
+  const b = document.getElementById('arBuilding').value.trim();
+  const f = document.getElementById('arFloor').value.trim();
+  const n = document.getElementById('arNumber').value.trim();
+  if (!b || !f || !n || !arType) { showToast('请填写完整信息'); return; }
+  const d = loadData();
+  if (d.rooms.some(r => r.building === b && r.number === n)) { showToast('该宿舍已存在'); return; }
+  d.rooms.push({ id: 'r' + Date.now(), building: b, floor: f, number: n, type: arType, residents: [] });
+  saveData(d);
+  closeModal('addRoomModal');
+  switchTab('rooms');
+  showToast('添加成功');
+}
+
+// ==================== ADMIN REPAIRS ====================
+function renderAdminRepairs(el) {
+  const d = loadData();
+  const statusMap = { pending: '待处理', repaired: '维修中', done: '已完成' };
+  let html = `<div class="section-title">报修管理 <span>共 ${d.repairs.length} 条</span></div>`;
+  if (d.repairs.length === 0) { html += '<div class="empty"><p>暂无报修记录</p></div>'; }
+  else {
+    html += '<div class="repair-list">';
+    [...d.repairs].reverse().forEach(r => {
+      html += repairCardHTML(r, true);
+    });
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// ==================== RESIDENT OVERVIEW ====================
+function renderResidentOverview(el) {
+  const d = loadData();
+  const room = d.rooms.find(r => r.id === currentUser.roomId);
+  if (!room) { el.innerHTML = '<div class="empty"><p>宿舍信息异常</p></div>'; return; }
+  const beds = room.type === 'five' ? 5 : 4;
+  const myRepairs = d.repairs.filter(r => r.submitBy === currentUser.name && r.roomId === currentUser.roomId);
+
+  let bedsHtml = '';
+  for (let i = 0; i < beds; i++) {
+    if (i < room.residents.length) {
+      const isMe = room.residents[i].name === currentUser.name;
+      bedsHtml += `<div class="bed-detail ${isMe ? 'occ' : 'occ'}" style="${isMe ? 'background:var(--accent-bg)' : ''}">
+        <div class="bed-num">${i+1}</div>
+        <div class="bed-info"><div class="name">${room.residents[i].name} ${isMe ? '（我）' : ''}</div><div class="phone">${room.residents[i].phone}</div></div>
+      </div>`;
+    } else {
+      bedsHtml += `<div class="bed-detail empty-slot"><div class="bed-num">${i+1}</div><div class="bed-info"><div class="empty-text">空床位</div></div></div>`;
+    }
+  }
+
+  el.innerHTML = `
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card accent"><div class="stat-label">我的宿舍</div><div class="stat-val" style="font-size:1.3rem">${currentUser.roomLabel}</div><div class="stat-sub">${room.type === 'five' ? '五人间' : '四人间'}</div></div>
+      <div class="stat-card green"><div class="stat-label">我的床位</div><div class="stat-val">${currentUser.bedIndex + 1}号床</div><div class="stat-sub">${currentUser.name}</div></div>
+      <div class="stat-card blue"><div class="stat-label">我的报修</div><div class="stat-val">${myRepairs.length}</div><div class="stat-sub">条记录</div></div>
+    </div>
+    <div class="section-title" style="margin-top:8px">宿舍成员</div>
+    <div class="bed-detail-list">${bedsHtml}</div>`;
+}
+
+// ==================== RESIDENT REPAIRS ====================
+function renderResidentRepairs(el) {
+  const d = loadData();
+  const myRepairs = d.repairs.filter(r => r.submitBy === currentUser.name && r.roomId === currentUser.roomId);
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin-bottom:0">我的报修 <span>共 ${myRepairs.length} 条</span></div>
+    <button class="btn btn-primary" onclick="openRepairModal()">+ 提交报修</button>
+  </div>`;
+  if (myRepairs.length === 0) { html += '<div class="empty"><p>暂无报修记录，如需报修请点击上方按钮</p></div>'; }
+  else {
+    html += '<div class="repair-list">';
+    [...myRepairs].reverse().forEach(r => { html += repairCardHTML(r, false); });
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// ==================== REPAIR CARD ====================
+function repairCardHTML(r, isAdmin) {
+  const statusMap = { pending: '待处理', repaired: '维修中', done: '已完成' };
+  let photos = '<div class="repair-photos">';
+  photos += `<div class="photo-group"><div class="photo-label">损坏照片</div>`;
+  if (r.photoBefore) photos += `<img class="photo-thumb" src="${r.photoBefore}" onclick="viewImg(this.src)">`;
+  else photos += '<div class="photo-placeholder">无照片</div>';
+  photos += '</div>';
+  photos += `<div class="photo-group"><div class="photo-label">维修照片</div>`;
+  if (r.photoAfter) photos += `<img class="photo-thumb" src="${r.photoAfter}" onclick="viewImg(this.src)">`;
+  else photos += '<div class="photo-placeholder">' + (r.status === 'done' ? '已维修' : '待上传') + '</div>';
+  photos += '</div></div>';
+
+  let actions = '';
+  if (isAdmin) {
+    if (r.status === 'pending') {
+      actions = `<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();startRepair('${r.id}')">开始维修</button>`;
+    } else if (r.status === 'repaired') {
+      actions = `<button class="btn btn-sm btn-green" onclick="event.stopPropagation();openFixModal('${r.id}')">上传维修照片</button>`;
+    }
+  }
+
+  return `<div class="repair-card">
+    <div class="repair-head">
+      <div class="repair-info"><span class="repair-room">${r.roomLabel}</span><span style="font-size:.8rem;color:var(--text3)">${r.submitBy} · ${r.submitAt}</span></div>
+      <span class="repair-status ${r.status}">${statusMap[r.status]}</span>
+    </div>
+    <div class="repair-body">
+      <div class="repair-item-name">${r.itemName}</div>
+      <div class="repair-desc">${r.desc}</div>
+      ${photos}
+    </div>
+    <div class="repair-foot">
+      <span>${r.doneAt ? '完成时间: ' + r.doneAt : ''}</span>
+      ${actions}
+    </div>
+  </div>`;
+}
+
+// ==================== REPAIR ACTIONS ====================
+function openRepairModal() {
+  document.getElementById('rpItem').value = '';
+  document.getElementById('rpDesc').value = '';
+  document.getElementById('rpPreview').classList.add('hidden');
+  document.getElementById('rpPreviewImg').src = '';
+  document.getElementById('repairModal').classList.add('open');
+}
+
+function submitRepair() {
+  const item = document.getElementById('rpItem').value.trim();
+  const desc = document.getElementById('rpDesc').value.trim();
+  if (!item) { showToast('请输入报修物品'); return; }
+  if (!desc) { showToast('请描述问题'); return; }
+  const d = loadData();
+  const photo = document.getElementById('rpPreviewImg').src || '';
+  const now = new Date();
+  const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  d.repairs.push({
+    id: 'rp' + Date.now(),
+    roomId: currentUser.roomId,
+    roomLabel: currentUser.roomLabel,
+    itemName: item,
+    desc,
+    photoBefore: photo,
+    status: 'pending',
+    submitBy: currentUser.name,
+    submitAt: ts,
+    photoAfter: '',
+    doneAt: ''
+  });
+  saveData(d);
+  closeModal('repairModal');
+  switchTab('repairs');
+  showToast('报修已提交');
+}
+
+function startRepair(id) {
+  const d = loadData();
+  const r = d.repairs.find(x => x.id === id);
+  if (!r) return;
+  r.status = 'repaired';
+  saveData(d);
+  switchTab(currentTab);
+  showToast('已开始维修');
+}
+
+function openFixModal(id) {
+  fixRepairId = id;
+  document.getElementById('fixPreview').classList.add('hidden');
+  document.getElementById('fixPreviewImg').src = '';
+  document.getElementById('fixModal').classList.add('open');
+}
+
+function confirmRepair() {
+  const photo = document.getElementById('fixPreviewImg').src || '';
+  if (!photo) { showToast('请上传维修照片'); return; }
+  const d = loadData();
+  const r = d.repairs.find(x => x.id === fixRepairId);
+  if (!r) return;
+  r.status = 'done';
+  r.photoAfter = photo;
+  const now = new Date();
+  r.doneAt = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  saveData(d);
+  closeModal('fixModal');
+  switchTab(currentTab);
+  showToast('维修完成');
+}
+
+// ==================== PHOTO ====================
+function handlePhoto(e, previewId) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('图片不能超过5MB'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const data = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById(previewId + 'Img').src = data;
+      document.getElementById(previewId).classList.remove('hidden');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto(previewId) {
+  document.getElementById(previewId).classList.add('hidden');
+  document.getElementById(previewId + 'Img').src = '';
+}
+
+function viewImg(src) {
+  document.getElementById('viewerImg').src = src;
+  document.getElementById('imgViewer').classList.add('open');
+}
+
+// ==================== QR CODE ====================
+function showQR() {
+  const url = window.location.href;
+  const container = document.getElementById('qrContent');
+  const size = Math.min(280, window.innerWidth - 80);
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+  container.innerHTML = '';
+  container.appendChild(canvas);
+  try { generateQR(canvas, url, 4); } catch(e) { console.error(e); }
+  container.innerHTML += `<div class="qr-url">${url}</div><div class="qr-hint">使用手机扫描二维码即可访问系统</div>`;
+  document.getElementById('qrModal').classList.add('open');
+}
+
+// ==================== QR CODE ENGINE ====================
+function generateQR(canvas, text, ecLevel) {
+  ecLevel = ecLevel || 1;
+  var ver = 1, cap = [17,32,53,78,106,134,154,192,230,271];
+  for (var i = 0; i < cap.length; i++) { if (text.length <= cap[i]) { ver = i + 1; break; } }
+  if (text.length > cap[cap.length-1]) ver = 10;
+
+  var bits = encodeAlnum(text, ver);
+  var dataBytes = toBytes(bits);
+  var ecBytes = calcEC(dataBytes, ver, ecLevel);
+  var finalBytes = dataBytes.concat(ecBytes);
+  var finalBits = bytesToBits(finalBytes);
+
+  var sz = 17 + ver * 4;
+  var m = makeMatrix(sz);
+  placeFinders(m, sz);
+  placeAlign(m, ver, sz);
+  placeTiming(m, sz);
+  m[8][sz - 8] = 1;
+  placeData(m, sz, finalBits);
+  applyMask(m, sz);
+  placeFmt(m, sz, ecLevel, 0);
+
+  drawCanvas(canvas, m, sz);
+}
+
+function encodeAlnum(text, ver) {
+  var ccBits = ver <= 9 ? 9 : (ver <= 26 ? 11 : 13);
+  var bits = [];
+  pushBits(bits, 2, 4);
+  pushBits(bits, text.length, ccBits);
+  for (var i = 0; i < text.length; i += 2) {
+    if (i + 1 < text.length) {
+      pushBits(bits, anVal(text[i]) * 45 + anVal(text[i+1]), 11);
+    } else {
+      pushBits(bits, anVal(text[i]), 6);
+    }
+  }
+  pushBits(bits, 0, 4);
+  while (bits.length % 8) bits.push(0);
+  return bits;
+}
+
+function anVal(c) {
+  var s = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  var i = s.indexOf(c.toUpperCase());
+  return i >= 0 ? i : 0;
+}
+
+function pushBits(a, v, n) { for (var i = n - 1; i >= 0; i--) a.push((v >> i) & 1); }
+
+function toBytes(bits) {
+  var b = [];
+  for (var i = 0; i < bits.length; i += 8) {
+    var v = 0;
+    for (var j = 0; j < 8; j++) v = (v << 1) | (bits[i+j] || 0);
+    b.push(v);
+  }
+  return b;
+}
+
+function bytesToBits(bytes) {
+  var b = [];
+  bytes.forEach(function(v) { for (var i = 7; i >= 0; i--) b.push((v >> i) & 1); });
+  return b;
+}
+
+// Galois Field
+function gfTables() {
+  var exp = [1], log = {}; log[0] = 0;
+  for (var i = 1; i < 256; i++) {
+    var v = exp[i-1] << 1;
+    if (v >= 256) v ^= 285;
+    exp[i] = v; log[v] = i;
+  }
+  return {exp:exp, log:log};
+}
+
+function calcEC(data, ver, ecl) {
+  var gf = gfTables();
+  var ecInfo = getECInfo(ver, ecl);
+  var blocks = [], di = 0;
+  for (var b = 0; b < ecInfo.b1c; b++) {
+    blocks.push(data.slice(di, di + ecInfo.b1d)); di += ecInfo.b1d;
+  }
+  for (var b = 0; b < ecInfo.b2c; b++) {
+    blocks.push(data.slice(di, di + ecInfo.b2d)); di += ecInfo.b2d;
+  }
+  var gen = rsGenPoly(ecInfo.ecl, gf);
+  var ecBlocks = blocks.map(function(blk) { return rsEncode(blk, gen, gf); });
+  var result = [];
+  for (var i = 0; i < ecInfo.ecl; i++) {
+    ecBlocks.forEach(function(blk) { if (i < blk.length) result.push(blk[i]); });
+  }
+  return result;
+}
+
+function getECInfo(v, ecl) {
+  var T = {
+    1:{L:{b1c:1,b1d:19,ecl:7},M:{b1c:1,b1d:16,ecl:10},Q:{b1c:1,b1d:13,ecl:13},H:{b1c:1,b1d:9,ecl:17}},
+    2:{L:{b1c:1,b1d:34,ecl:10},M:{b1c:1,b1d:28,ecl:16},Q:{b1c:1,b1d:22,ecl:22},H:{b1c:1,b1d:16,ecl:28}},
+    3:{L:{b1c:1,b1d:55,ecl:15},M:{b1c:1,b1d:44,ecl:26},Q:{b1c:2,b1d:17,ecl:18},H:{b1c:2,b1d:13,ecl:22}},
+    4:{L:{b1c:1,b1d:80,ecl:20},M:{b1c:2,b1d:32,ecl:18},Q:{b1c:2,b1d:24,ecl:26},H:{b1c:4,b1d:9,ecl:16}},
+    5:{L:{b1c:1,b1d:108,ecl:26},M:{b1c:2,b1d:43,ecl:24},Q:{b1c:2,b1d:15,b2c:2,b2d:16,ecl:18},H:{b1c:2,b1d:11,b2c:2,b2d:12,ecl:22}},
+    6:{L:{b1c:2,b1d:68,ecl:18},M:{b1c:4,b1d:27,ecl:16},Q:{b1c:4,b1d:19,ecl:24},H:{b1c:4,b1d:15,ecl:28}},
+    7:{L:{b1c:2,b1d:78,ecl:20},M:{b1c:4,b1d:31,ecl:18},Q:{b1c:2,b1d:14,b2c:4,b2d:15,ecl:18},H:{b1c:4,b1d:13,b2c:1,b2d:14,ecl:26}},
+    8:{L:{b1c:2,b1d:97,ecl:24},M:{b1c:2,b1d:38,b2c:2,b2d:39,ecl:22},Q:{b1c:4,b1d:18,b2c:2,b2d:19,ecl:22},H:{b1c:4,b1d:14,b2c:2,b2d:15,ecl:26}},
+    9:{L:{b1c:2,b1d:116,ecl:30},M:{b1c:3,b1d:36,b2c:2,b2d:37,ecl:22},Q:{b1c:4,b1d:16,b2c:4,b2d:17,ecl:20},H:{b1c:4,b1d:12,b2c:4,b2d:13,ecl:24}},
+    10:{L:{b1c:2,b1d:68,b2c:2,b2d:69,ecl:18},M:{b1c:4,b1d:43,b2c:1,b2d:44,ecl:26},Q:{b1c:6,b1d:19,b2c:2,b2d:20,ecl:24},H:{b1c:6,b1d:15,b2c:2,b2d:16,ecl:28}}
+  };
+  var e = T[v][['L','M','Q','H'][ecl]];
+  return {b1c:e.b1c||0,b1d:e.b1d||0,b2c:e.b2c||0,b2d:e.b2d||0,ecl:e.ecl};
+}
+
+function rsGenPoly(nec, gf) {
+  var g = [1];
+  for (var i = 0; i < nec; i++) {
+    var ng = new Array(g.length + 1).fill(0);
+    for (var j = 0; j < g.length; j++) {
+      ng[j] ^= g[j];
+      ng[j+1] ^= gfMul(g[j], gf.exp[i], gf);
+    }
+    g = ng;
+  }
+  return g;
+}
+
+function rsEncode(data, gen, gf) {
+  var r = data.slice();
+  for (var i = 0; i < data.length; i++) {
+    var c = r[i];
+    if (c !== 0) {
+      for (var j = 0; j < gen.length; j++) {
+        r[i + j] ^= gfMul(c, gen[j], gf);
+      }
+    }
+  }
+  return r.slice(data.length);
+}
+
+function gfMul(a, b, gf) {
+  if (a === 0 || b === 0) return 0;
+  return gf.exp[(gf.log[a] + gf.log[b]) % 255];
+}
+
+// Matrix
+function makeMatrix(sz) { var m = []; for (var i = 0; i < sz; i++) m.push(new Array(sz).fill(-1)); return m; }
+
+function setMod(m, x, y, v) { if (m[y][x] === -1) m[y][x] = v; }
+
+function placeFinders(m, sz) {
+  [[0,0],[sz-7,0],[0,sz-7]].forEach(function(p) {
+    for (var y = 0; y < 7; y++) for (var x = 0; x < 7; x++) {
+      var outer = x===0||x===6||y===0||y===6;
+      var inner = x>=2&&x<=4&&y>=2&&y<=4;
+      m[p[1]+y][p[0]+x] = (outer||inner) ? 1 : 0;
+    }
+    for (var i = 0; i < 8; i++) {
+      if (p[0]+7 < sz && p[1]+i < sz) m[p[1]+i][p[0]+7] = 0;
+      if (p[0]+i < sz && p[1]+7 < sz) m[p[1]+7][p[0]+i] = 0;
+      if (p[0]-1 >= 0 && p[1]+i < sz) m[p[1]+i][p[0]-1] = 0;
+      if (p[0]+i < sz && p[1]-1 >= 0) m[p[1]-1][p[0]+i] = 0;
+    }
+  });
+  for (var i = 8; i < sz-8; i++) { m[6][i] = i%2===0?1:0; m[i][6] = i%2===0?1:0; }
+}
+
+function placeAlign(m, ver, sz) {
+  if (ver < 2) return;
+  var pos = alignPos(ver);
+  pos.forEach(function(y) { pos.forEach(function(x) {
+    if ((x<8&&y<8)||(x>sz-9&&y<8)||(x<8&&y>sz-9)) return;
+    for (var dy=-2;dy<=2;dy++) for (var dx=-2;dx<=2;dx++) {
+      var ax=x+dx,ay=y+dy;
+      if (ax<0||ax>=sz||ay<0||ay>=sz) continue;
+      m[ay][ax] = (Math.abs(dx)===2||Math.abs(dy)===2||(dx===0&&dy===0)) ? 1 : 0;
+    }
+  }); });
+}
+
+function alignPos(v) {
+  if (v===1) return [];
+  if (v===2) return [6,18];
+  if (v<=6) return [6,18+v*4];
+  var s = Math.round(6+(v*4)/((2)));
+  var p = [6];
+  var last = 6 + Math.round((v*4+4)/(Math.ceil((v-1)/7)+1));
+  for (var i = 0; i < Math.ceil((v-1)/7); i++) p.push(Math.round(6 + (last-6)*(i+1)/(Math.ceil((v-1)/7))));
+  p.push(last);
+  return p.filter(function(v,i,a){return a.indexOf(v)===i;});
+}
+
+function placeTiming(m, sz) {
+  for (var i = 8; i < sz-8; i++) {
+    m[6][i] = m[6][i]===-1 ? (i%2===0?1:0) : m[6][i];
+    m[i][6] = m[i][6]===-1 ? (i%2===0?1:0) : m[i][6];
+  }
+}
+
+function placeData(m, sz, bits) {
+  var idx = 0, up = true;
+  for (var col = sz - 1; col >= 0; col -= 2) {
+    if (col === 6) col = 5;
+    var range = up ? [sz-1, 0] : [0, sz-1];
+    var step = up ? -1 : 1;
+    for (var row = range[0]; up ? row >= range[1] : row <= range[1]; row += step) {
+      for (var c = 0; c < 2; c++) {
+        var x = col - c, y = row;
+        if (x < 0 || x >= sz || y < 0 || y >= sz) continue;
+        if (m[y][x] !== -1) continue;
+        m[y][x] = idx < bits.length ? bits[idx] : 0;
+        idx++;
+      }
+    }
+    up = !up;
+  }
+}
+
+function applyMask(m, sz) {
+  for (var y = 0; y < sz; y++) for (var x = 0; x < sz; x++) {
+    if (isRes(x, y, sz)) continue;
+    if ((x + y) % 2 === 0) m[y][x] ^= 1;
+  }
+}
+
+function isRes(x, y, sz) {
+  if (x < 9 && y < 9) return true;
+  if (x >= sz-8 && y < 9) return true;
+  if (x < 9 && y >= sz-8) return true;
+  if (x === 6 || y === 6) return true;
+  return false;
+}
+
+function placeFmt(m, sz, ecl, mask) {
+  var data = (ecl << 3) | mask;
+  var rem = data;
+  for (var i = 0; i < 10; i++) {
+    rem = (rem << 1) ^ ((rem >> 9) * 0x537);
+  }
+  var bits = ((data << 10) | rem) ^ 0x5412;
+  var p1 = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+  var p2 = [[sz-1,8],[sz-2,8],[sz-3,8],[sz-4,8],[sz-5,8],[sz-6,8],[sz-7,8],[8,sz-8],[8,sz-7],[8,sz-6],[8,sz-5],[8,sz-4],[8,sz-3],[8,sz-2],[8,sz-1]];
+  for (var i = 0; i < 15; i++) {
+    var b = (bits >> (14 - i)) & 1;
+    m[p1[i][1]][p1[i][0]] = b;
+    m[p2[i][1]][p2[i][0]] = b;
+  }
+}
+
+function drawCanvas(canvas, m, sz) {
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width;
+  var quiet = Math.max(4, Math.round(w / sz * 0.15));
+  var total = sz + quiet * 2;
+  var cSize = w / total;
+
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, w, w);
+  ctx.fillStyle = '#2a2118';
+
+  for (var y = 0; y < sz; y++) {
+    for (var x = 0; x < sz; x++) {
+      if (m[y][x] === 1) {
+        ctx.fillRect((x + quiet) * cSize, (y + quiet) * cSize, cSize + 0.5, cSize + 0.5);
+      }
+    }
+  }
+}
+
+// ==================== MODALS ====================
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(function(el) {
+  el.addEventListener('click', function(e) { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ==================== TOAST ====================
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ==================== INIT ====================
+(function init() {
+  var saved = sessionStorage.getItem('dormUser');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    showApp();
+  }
+})();
+</script>
+</body>
+</html>
